@@ -1965,7 +1965,15 @@ object Defaults extends BuildCommon with DefExtra {
   }
 
   /** Implements `cleanFiles` task. */
-  private[sbt] def cleanFilesTask: Initialize[Task[Vector[File]]] = Def.task { Vector.empty[File] }
+  private[sbt] def cleanFilesTask: Initialize[Task[Vector[File]]] = Def.task {
+    val t = target.value.toPath
+    ((Compile / managedSourceDirectories).value ++
+      (Test / managedSourceDirectories).value ++
+      (Compile / managedResourceDirectories).value ++
+      (Test / managedResourceDirectories).value)
+      .filter(d => !d.toPath.startsWith(t))
+      .toVector
+  }
 
   def runMainTask(
       classpath: Initialize[Task[Classpath]],
